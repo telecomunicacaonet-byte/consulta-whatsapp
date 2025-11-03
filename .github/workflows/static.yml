@@ -3,22 +3,58 @@
 <head>
   <meta charset="UTF-8">
   <title>Redirecionamento WhatsApp</title>
-  <script>
-    const params = new URLSearchParams(window.location.search);
-    const numero = params.get('numero');
-    const msg = params.get('msg');
-
-    if (numero) {
-      const mensagem = msg ? encodeURIComponent(msg) : "";
-      window.location.href = `https://wa.me/${numero}?text=${mensagem}`;
-    } else {
-      document.addEventListener("DOMContentLoaded", () => {
-        document.body.innerHTML = "<p style='color:red; text-align:center; margin-top:50px;'>Número de WhatsApp não fornecido.</p>";
-      });
+  <style>
+    body { 
+      font-family: Arial, sans-serif; 
+      text-align: center; 
+      margin-top: 50px; 
     }
+    .error { color: red; }
+    .loading { font-size: 18px; }
+    a { color: blue; text-decoration: underline; }
+  </style>
+  <script>
+    // Função para validar número de WhatsApp (apenas dígitos, mínimo 10 caracteres)
+    function validarNumero(num) {
+      return /^\d{10,15}$/.test(num);
+    }
+
+    // Obtém parâmetros da URL
+    const params = new URLSearchParams(window.location.search);
+    const numero = params.get('numero')?.replace(/\D/g,''); // remove qualquer caractere não numérico
+    const msg = params.get('msg') || "";
+
+    document.addEventListener("DOMContentLoaded", () => {
+      const body = document.body;
+
+      if (!numero) {
+        body.innerHTML = "<p class='error'>Número de WhatsApp não fornecido.</p>";
+        return;
+      }
+
+      if (!validarNumero(numero)) {
+        body.innerHTML = "<p class='error'>Número de WhatsApp inválido.</p>";
+        return;
+      }
+
+      const mensagem = encodeURIComponent(msg);
+
+      // Mostra texto de carregando
+      body.innerHTML = "<p class='loading'>Redirecionando para o WhatsApp...</p>";
+
+      // Redireciona após 1 segundo
+      setTimeout(() => {
+        const link = `https://wa.me/${numero}?text=${mensagem}`;
+        window.location.href = link;
+      }, 1000);
+
+      // Botão de fallback caso o redirecionamento automático não funcione
+      const fallback = document.createElement("p");
+      fallback.innerHTML = `Se não for redirecionado, <a href="https://wa.me/${numero}?text=${mensagem}">clique aqui</a>.`;
+      body.appendChild(fallback);
+    });
   </script>
 </head>
 <body>
-  <p style="text-align:center; margin-top:50px;">Redirecionando para o WhatsApp...</p>
 </body>
 </html>
